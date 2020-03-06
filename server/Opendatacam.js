@@ -580,6 +580,8 @@ module.exports = {
             message = '';
             Logger.log(message);
             Logger.log(error);
+
+            console.log(error);
             // res.emit('close');
           }
         }
