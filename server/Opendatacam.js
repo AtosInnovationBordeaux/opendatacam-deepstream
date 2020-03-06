@@ -209,6 +209,7 @@ module.exports = {
     // Scale detection
     let detectionScaledOfThisFrame = detectionsOfThisFrame.map((detection) => {
       return {
+        id: detection.id,
         name: detection.name,
         x: detection.relative_coordinates.center_x * Opendatacam.videoResolution.w,
         y: detection.relative_coordinates.center_y * Opendatacam.videoResolution.h,
@@ -240,100 +241,100 @@ module.exports = {
 
     Opendatacam.nbItemsTrackedThisFrame = trackerDataForThisFrame.length;
 
-    // Compute nbItemsTrackedSinceRecordingStarted based on ids (assume that id increment is one)
-    const biggestTrackedItemIdThisFrame = trackerDataForThisFrame[trackerDataForThisFrame.length - 1].id;
-    const nbItemsTrackedSinceRecordingStarted = biggestTrackedItemIdThisFrame - Opendatacam._refTrackedItemIdWhenRecordingStarted;
-    Opendatacam.totalItemsTracked = nbItemsTrackedSinceRecordingStarted;
-  
-    // Compute deltaYs for all tracked items (between the counting lines and the tracked items position)
-    // And check if trackedItem are going through some counting areas 
-    // For each new tracked item
-    trackerDataForThisFrame = trackerDataForThisFrame.map((trackedItem) => {
+    if (Opendatacam.nbItemsTrackedThisFrame > 0) {
+      // Compute nbItemsTrackedSinceRecordingStarted based on ids (assume that id increment is one)
+      const biggestTrackedItemIdThisFrame = trackerDataForThisFrame[trackerDataForThisFrame.length - 1].id;
+      const nbItemsTrackedSinceRecordingStarted = biggestTrackedItemIdThisFrame - Opendatacam._refTrackedItemIdWhenRecordingStarted;
+      Opendatacam.totalItemsTracked = nbItemsTrackedSinceRecordingStarted;
+    
+      // Compute deltaYs for all tracked items (between the counting lines and the tracked items position)
+      // And check if trackedItem are going through some counting areas 
+      // For each new tracked item
+      trackerDataForThisFrame = trackerDataForThisFrame.map((trackedItem) => {
 
-      // For each counting areas
-      var countingDeltas = Object.keys(Opendatacam.countingAreas).map((countingAreaKey) => {
-        let countingAreaProps = Opendatacam.countingAreas[countingAreaKey].computed;
-        // deltaY = Y(detection) - Y(on-counting-line)
-        // NB: negating Y detection to get it in "normal" coordinates space
-        // deltaY = - Y(detection) - a X(detection) - b
-        let deltaY = - trackedItem.y - countingAreaProps.a * trackedItem.x - countingAreaProps.b;
+        // For each counting areas
+        var countingDeltas = Object.keys(Opendatacam.countingAreas).map((countingAreaKey) => {
+          let countingAreaProps = Opendatacam.countingAreas[countingAreaKey].computed;
+          // deltaY = Y(detection) - Y(on-counting-line)
+          // NB: negating Y detection to get it in "normal" coordinates space
+          // deltaY = - Y(detection) - a X(detection) - b
+          let deltaY = - trackedItem.y - countingAreaProps.a * trackedItem.x - countingAreaProps.b;
 
-        // If trackerDataForLastFrame exists, we can if we items are passing through the counting line
-        if(Opendatacam.trackerDataForLastFrame) {
-          // Find trackerItem data of last frame
-          let trackerItemLastFrame = Opendatacam.trackerDataForLastFrame.data.find((itemLastFrame) => itemLastFrame.id === trackedItem.id)
-          // If trackedItemLastFrame exist and deltaY was computed last frame
-          if(trackerItemLastFrame && trackerItemLastFrame.countingDeltas[countingAreaKey]) {
-            let lastDeltaY = trackerItemLastFrame.countingDeltas[countingAreaKey]
-            // Remind counted status
-            if(trackerItemLastFrame.counted) {
-              // console.log(`${trackerItemLastFrame.id} appear to have been counted on last frame`);
-              trackedItem.counted = trackerItemLastFrame.counted;
-            } else {
-              trackedItem.counted = [];
-            }
-
-            if(Math.sign(lastDeltaY) !== Math.sign(deltaY)) {
-
-              // Object trajectory must intersept the counting line between xBounds
-              // We know it intersept between those two frames, check if they are
-              // corresponding to the bounds
-              let minX = Math.min(trackerItemLastFrame.x, trackedItem.x);
-              let maxX = Math.max(trackerItemLastFrame.x, trackedItem.x);
-
-              if(countingAreaProps.xBounds.xMin <= maxX && 
-                countingAreaProps.xBounds.xMax >= minX) {
-
-                // console.log("*****************************")
-                // console.log("COUNTING SOMETHING")
-                // console.log("*****************************")
-                // // console.log(trackedItem);
-
-                // Do not count twice the same tracked item
-                if(trackedItem.counted.find((countedEvent) => countedEvent.areaKey === countingAreaKey)) {
-                  // already counted on this areaKey, do not count twice 
-                  Logger.log('Already counted, do not count it twice')
-                } else {
-                  // Tracked item has cross the {countingAreaKey} counting line
-                  // Count it
-                  // console.log(`Counting ${trackedItem.id}`);
-                  let countedItem = this.countItem(trackedItem, countingAreaKey, frameId);
-                  countedItemsForThisFrame.push(countedItem);
-                }
-  
-                
-
+          // If trackerDataForLastFrame exists, we can if we items are passing through the counting line
+          if(Opendatacam.trackerDataForLastFrame) {
+            // Find trackerItem data of last frame
+            let trackerItemLastFrame = Opendatacam.trackerDataForLastFrame.data.find((itemLastFrame) => itemLastFrame.id === trackedItem.id)
+            // If trackedItemLastFrame exist and deltaY was computed last frame
+            if(trackerItemLastFrame && trackerItemLastFrame.countingDeltas[countingAreaKey]) {
+              let lastDeltaY = trackerItemLastFrame.countingDeltas[countingAreaKey]
+              // Remind counted status
+              if(trackerItemLastFrame.counted) {
+                // console.log(`${trackerItemLastFrame.id} appear to have been counted on last frame`);
+                trackedItem.counted = trackerItemLastFrame.counted;
               } else {
-                // console.log('NOT IN xBOUNDS');
-                // console.log(countingAreaProps.xBounds);
-                // console.log(trackedItem)
+                trackedItem.counted = [];
               }
 
-              
+              if(Math.sign(lastDeltaY) !== Math.sign(deltaY)) {
+
+                // Object trajectory must intersept the counting line between xBounds
+                // We know it intersept between those two frames, check if they are
+                // corresponding to the bounds
+                let minX = Math.min(trackerItemLastFrame.x, trackedItem.x);
+                let maxX = Math.max(trackerItemLastFrame.x, trackedItem.x);
+
+                if(countingAreaProps.xBounds.xMin <= maxX && 
+                  countingAreaProps.xBounds.xMax >= minX) {
+
+                  // console.log("*****************************")
+                  // console.log("COUNTING SOMETHING")
+                  // console.log("*****************************")
+                  // // console.log(trackedItem);
+
+                  // Do not count twice the same tracked item
+                  if(trackedItem.counted.find((countedEvent) => countedEvent.areaKey === countingAreaKey)) {
+                    // already counted on this areaKey, do not count twice 
+                    Logger.log('Already counted, do not count it twice')
+                  } else {
+                    // Tracked item has cross the {countingAreaKey} counting line
+                    // Count it
+                    // console.log(`Counting ${trackedItem.id}`);
+                    let countedItem = this.countItem(trackedItem, countingAreaKey, frameId);
+                    countedItemsForThisFrame.push(countedItem);
+                  }
+    
+                  
+
+                } else {
+                  // console.log('NOT IN xBOUNDS');
+                  // console.log(countingAreaProps.xBounds);
+                  // console.log(trackedItem)
+                }
+
+                
+              }
             }
           }
-        }
+
+          return {
+            countingAreaKey: countingAreaKey,
+            deltaY: deltaY
+          }
+
+        });
+        // Convert counting delta to a map
+        var countingDeltaMap = {}
+        
+        countingDeltas.map((countingDelta) => {
+          countingDeltaMap[countingDelta.countingAreaKey] = countingDelta.deltaY
+        })
 
         return {
-          countingAreaKey: countingAreaKey,
-          deltaY: deltaY
+          ...trackedItem,
+          countingDeltas: countingDeltaMap
         }
-
-      });
-
-      // Convert counting delta to a map
-      var countingDeltaMap = {}
-      
-      countingDeltas.map((countingDelta) => {
-        countingDeltaMap[countingDelta.countingAreaKey] = countingDelta.deltaY
       })
-
-      return {
-        ...trackedItem,
-        countingDeltas: countingDeltaMap
-      }
-    })
-
+    }
     // console.log('Tracker data');
     // console.log('=========')
     // console.log(JSON.stringify(trackerDataForThisFrame));
@@ -578,6 +579,8 @@ module.exports = {
             message = '';
             Logger.log(message);
             Logger.log(error);
+
+            console.log(error);
             // res.emit('close');
           }
         }
