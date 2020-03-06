@@ -369,7 +369,6 @@ module.exports = {
     }
 
     this.sendUpdateToClient();
-
   },
 
   sendUpdateToClient: function() {
@@ -456,15 +455,17 @@ module.exports = {
     console.log('Start recording');
     Opendatacam.recordingStatus.isRecording = true;
     Opendatacam.recordingStatus.dateStarted = new Date();
-    Opendatacam.totalItemsTracked = 0;
+    /* Opendatacam.totalItemsTracked = 0; */
     const filename = isFile ? config.VIDEO_INPUTS_PARAMS.file.split('/').pop() : '';
     Opendatacam.recordingStatus.filename = filename;
 
     // Store lowest ID of currently tracked item when start recording 
     // to be able to compute nbObjectTracked
     const currentlyTrackedItems = Tracker.getJSONOfTrackedItems() 
-    const highestTrackedItemId = currentlyTrackedItems[currentlyTrackedItems.length - 1].id;
+    /* const highestTrackedItemId = currentlyTrackedItems[currentlyTrackedItems.length - 1].id; */
+    const highestTrackedItemId = Opendatacam.totalItemsTracked;
     Opendatacam._refTrackedItemIdWhenRecordingStarted = highestTrackedItemId - currentlyTrackedItems.length;
+    Opendatacam.totalItemsTracked = 0;
 
     
 
@@ -579,8 +580,6 @@ module.exports = {
             message = '';
             Logger.log(message);
             Logger.log(error);
-
-            console.log(error);
             // res.emit('close');
           }
         }
