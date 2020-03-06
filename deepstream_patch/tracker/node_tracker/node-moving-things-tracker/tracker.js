@@ -57,9 +57,10 @@ exports.updateTrackedItemsWithNewFrame = function(detectionsOfThisFrame, frameNb
       var newItemTracked = new ItemTracked(itemDetected, frameNb, DEFAULT_UNMATCHEDFRAMES_TOLERANCE)
       // Add it to the map
       mapOfItemsTracked.set(newItemTracked.id, newItemTracked)
-      console.log('Tracker map :');
-      console.log(mapOfItemsTracked);
-      
+      if(DEBUG_MODE) {
+        console.log('Tracker map :');
+        console.log(mapOfItemsTracked);
+      }
       var undetectedItems = [];
       detectionsOfThisFrame.forEach(function(itemDetected) {
         if(mapOfItemsTracked.get(itemDetected.id)==null){
@@ -68,7 +69,9 @@ exports.updateTrackedItemsWithNewFrame = function(detectionsOfThisFrame, frameNb
       });
 
       undetectedItems.forEach(function(item){
-        console.log('For frame ' + frameNb + ' itemNb ' + item.idDisplay + 'is deleted');
+        if(DEBUG_MODE) {
+          console.log('For frame ' + frameNb + ' itemNb ' + item.idDisplay + 'is deleted');
+        }
         item.countDown(frameNb);
         item.updateTheoricalPositionAndSize();
         mapOfItemsTracked.get(item.id)
@@ -78,7 +81,9 @@ exports.updateTrackedItemsWithNewFrame = function(detectionsOfThisFrame, frameNb
       });
     });
   } else {
-    console.log("reset map");
+    if(DEBUG_MODE) {
+      console.log("reset map");
+    }
     mapOfItemsTracked = new Map();
 /*     mapOfItemsTracked.forEach(function(itemTracked) {
       console.log('For frame ' + frameNb + ' itemNb ' + itemDetected.idDisplay + 'is deleted');

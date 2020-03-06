@@ -1,0 +1,58 @@
+{
+  "_args": [
+    [
+      "node-moving-things-tracker@0.6.0",
+      "/home/jetson/opendatacam-deepstream"
+    ]
+  ],
+  "_from": "node-moving-things-tracker@0.6.0",
+  "_id": "node-moving-things-tracker@0.6.0",
+  "_inBundle": false,
+  "_integrity": "sha512-4MLXPbjvrSlTt4FPmgWuYUyw9NnFIC17BJDFlAd5iRFddPlJhgCTGD0EmmMTmeBO4XmMxTK7ekIO/jXAfZYXSg==",
+  "_location": "/node-moving-things-tracker",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "node-moving-things-tracker@0.6.0",
+    "name": "node-moving-things-tracker",
+    "escapedName": "node-moving-things-tracker",
+    "rawSpec": "0.6.0",
+    "saveSpec": null,
+    "fetchSpec": "0.6.0"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/node-moving-things-tracker/-/node-moving-things-tracker-0.6.0.tgz",
+  "_spec": "0.6.0",
+  "_where": "/home/jetson/opendatacam-deepstream",
+  "author": {
+    "name": "@tdurand"
+  },
+  "bin": {
+    "node-moving-things-tracker": "main.js"
+  },
+  "contributors": [
+    {
+      "name": "Benedikt Groß",
+      "email": "b-g",
+      "url": "http://benedikt-gross.de/"
+    }
+  ],
+  "dependencies": {
+    "lodash.isequal": "^4.5.0",
+    "minimist": "^1.2.0",
+    "uuid": "^3.2.1"
+  },
+  "description": "Tracker by detections in javascript for node.js / browsers",
+  "devDependencies": {},
+  "license": "MIT",
+  "main": "main.js",
+  "name": "node-moving-things-tracker",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "url": "https://github.com/tdurand/node-moving-things-tracker",
+  "version": "0.6.0"
+}
